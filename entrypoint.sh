@@ -1,6 +1,6 @@
 #!/bin/sh
 
-# from https://github.com/processone/docker-ejabberd/issues/64#issuecomment-814310376
+# based on https://github.com/processone/docker-ejabberd/issues/64#issuecomment-814310376
 
 set -x
 
@@ -40,11 +40,11 @@ join_cluster() {
         fi
 
         local join_cluster_result=0
-        local pod_names="$(curl --silent -X GET "$INSECURE" --cacert /var/run/secrets/kubernetes.io/serviceaccount/ca.crt "https://kubernetes.default.svc.$kubernetes_cluster_name/api/v1/namespaces/$kubernetes_namespace/pods?labelSelector=$kubernetes_label_selector" -H "Authorization: Bearer $(cat /var/run/secrets/kubernetes.io/serviceaccount/token)" | jq '.items[].metadata.name' | sed 's/"//g' | tr '\n' ' ')"
+        local pod_ips="$(curl --silent -X GET "$INSECURE" --cacert /var/run/secrets/kubernetes.io/serviceaccount/ca.crt "https://kubernetes.default.svc.$kubernetes_cluster_name/api/v1/namespaces/$kubernetes_namespace/pods?labelSelector=$kubernetes_label_selector" -H "Authorization: Bearer $(cat /var/run/secrets/kubernetes.io/serviceaccount/token)" | jq '.items[].status.podIP' | sed 's/"//g' | tr '\n' ' ')"
 
-        for pod_name in "$pod_names";
+        for pod_ip in "$pod_ips";
         do
-            if [ "$pod_name" == "null" ]; then
+            if [ "$pod_ip" == "null" ]; then
                 echo "[entrypoint_script] No Kubernetes pods were found. This might happen because the current pod is the first pod."
                 echo "[entrypoint_script] Skip joining cluster."
                 touch "$EJABBERD_CLUSTER_READY_FILE"
@@ -52,8 +52,8 @@ join_cluster() {
                 touch "$EJABBERD_READY_FILE"
                 break
             fi
-            if [ "$pod_name" != "$EJABBERD_KUBERNETES_POD_NAME" ]; then
-                local node_to_join="ejabberd@$pod_name.$kubernetes_subdomain.$kubernetes_namespace.svc.$kubernetes_cluster_name"
+            if [ "$pod_ip" != "$EJABBERD_KUBERNETES_POD_IP" ]; then
+                local node_to_join="ejabberd@$pod_ip"
                 echo "[entrypoint_script] Will join cluster node: '$node_to_join'"
 
                 local response="$($HOME/bin/ejabberdctl ping "$node_to_join")"
@@ -68,7 +68,7 @@ join_cluster() {
 
                 break
             else
-                echo "[entrypoint_script] Skip joining current node: $pod_name"
+                echo "[entrypoint_script] Skip joining current node: $pod_ip"
             fi
         done
 
@@ -92,15 +92,12 @@ join_cluster() {
 EJABBERD_PID=0
 
 terminate() {
-    local net_interface="$(route | grep '^default' | grep -o '[^ ]*$')"
-    local ip_address="$(ip -4 addr show "$net_interface" | grep -oE '[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}' | sed -e "s/^[[:space:]]*//" | head -n 1)"
-
     if [ "$EJABBERD_PID" -ne 0 ]; then
         # Leave the cluster before terminating
         if [ -n "$EJABBERD_KUBERNETES_HOSTNAME" ]; then
             NODE_NAME_TO_TERMINATE="ejabberd@$EJABBERD_KUBERNETES_HOSTNAME"
         else
-            NODE_NAME_TO_TERMINATE="ejabberd@$ip_address"
+            NODE_NAME_TO_TERMINATE="ejabberd@$EJABBERD_KUBERNETES_POD_IP"
         fi
 
         echo "[entrypoint_script] Leaving cluster '$NODE_NAME_TO_TERMINATE'"
