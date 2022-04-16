@@ -12,6 +12,11 @@ if [ -e "$EJABBERD_READY_FILE" ]; then
     rm "$EJABBERD_READY_FILE"
 fi
 
+if [ -n "$ERLANG_COOKIE" ]; then
+    printf "$ERLANG_COOKIE" > "$HOME/.erlang.cookie"
+    chmod 400 "$HOME/.erlang.cookie"
+fi
+
 ## Clustering
 join_cluster() {
     # No need to look for a cluster to join if joined before.
