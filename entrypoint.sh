@@ -40,7 +40,7 @@ join_cluster() {
         fi
 
         local join_cluster_result=0
-        local pod_names="$(curl --silent -X GET "$INSECURE" --cacert /var/run/secrets/kubernetes.io/serviceaccount/ca.crt "https://kubernetes.default.svc.$kubernetes_cluster_name/api/v1/namespaces/$kubernetes_namespace/pods?labelSelector=$kubernetes_label_selector" -H "Authorization: Bearer $(cat /var/run/secrets/kubernetes.io/serviceaccount/token)" | jq '.items[].spec.hostname' | sed 's/"//g' | tr '\n' ' ')"
+        local pod_names="$(curl --silent -X GET "$INSECURE" --cacert /var/run/secrets/kubernetes.io/serviceaccount/ca.crt "https://kubernetes.default.svc.$kubernetes_cluster_name/api/v1/namespaces/$kubernetes_namespace/pods?labelSelector=$kubernetes_label_selector" -H "Authorization: Bearer $(cat /var/run/secrets/kubernetes.io/serviceaccount/token)" | jq '.items[].metadata.name' | sed 's/"//g' | tr '\n' ' ')"
 
         for pod_name in "$pod_names";
         do
