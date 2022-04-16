@@ -42,7 +42,7 @@ join_cluster() {
         local join_cluster_result=0
         local pod_ips="$(curl --silent -X GET "$INSECURE" --cacert /var/run/secrets/kubernetes.io/serviceaccount/ca.crt "https://kubernetes.default.svc.$kubernetes_cluster_name/api/v1/namespaces/$kubernetes_namespace/pods?labelSelector=$kubernetes_label_selector" -H "Authorization: Bearer $(cat /var/run/secrets/kubernetes.io/serviceaccount/token)" | jq '.items[].status.podIP' | sed 's/"//g' | tr '\n' ' ')"
 
-        for pod_ip in "$pod_ips";
+        for pod_ip in $pod_ips;
         do
             if [ "$pod_ip" == "null" ]; then
                 echo "[entrypoint_script] No Kubernetes pods were found. This might happen because the current pod is the first pod."
