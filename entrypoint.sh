@@ -17,7 +17,7 @@ if [ -n "$ERLANG_COOKIE" ]; then
     chmod 400 "$HOME/.erlang.cookie"
 fi
 
-echo ERLANG_NODE="ejabberd@$(hostname -f)" >> conf/ejabberdctl.cfg
+echo ERLANG_NODE='ejabberd@$(hostname -f)' >> conf/ejabberdctl.cfg
 
 ## Clustering
 join_cluster() {
