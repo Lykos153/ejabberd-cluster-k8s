@@ -66,7 +66,7 @@ terminate() {
         $HOME/bin/ejabberdctl stopped > /dev/null
 
         kill -s TERM "$EJABBERD_PID"
-        exit 0
+        exit $1
     fi
 }
 
@@ -79,5 +79,5 @@ elector -election "${ELECTION_NAME}" -namespace "${ELECTION_NAMESPACE}" \
     -http "${ELECTION_URL}"&
 ELECTOR_PID=$!
 $HOME/bin/ejabberdctl started
-join_cluster && touch "$EJABBERD_READY_FILE" || terminate
+join_cluster && touch "$EJABBERD_READY_FILE" || terminate $?
 wait "$EJABBERD_PID" "$ELECTOR_PID"
