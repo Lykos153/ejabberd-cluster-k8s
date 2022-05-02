@@ -1,0 +1,19 @@
+apiVersion: "acid.zalan.do/v1"
+kind: postgresql
+metadata:
+  name: ejabberd-postgres
+spec:
+  teamId: ejabberd
+  volume:
+    size: 10Gi
+    storageClass: hcloud-volumes
+  numberOfInstances: 1
+  users:
+    jabberadmin:  # database owner
+    - superuser
+    - createdb
+    ejabberd: []  # role for application foo
+  databases:
+    ejabberd: ejabberd  # dbname: owner
+  postgresql:
+    version: "14"

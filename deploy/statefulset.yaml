@@ -1,0 +1,130 @@
+# Migration from prosody: https://thomas-leister.de/en/migrating-trashserver-prosody-ejabberd/
+# Cluster setup: https://github.com/processone/docker-ejabberd/issues/64
+
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: ejabberd
+spec:
+  selector:
+    matchLabels:
+      app: ejabberd
+  serviceName: ejabberd-headless
+  replicas: 2
+  podManagementPolicy: OrderedReady
+  template:
+    metadata:
+      labels:
+        app: ejabberd
+    spec:
+      serviceAccountName: ejabberd
+      # subdomain: ejabberd-headless
+      # setHostnameAsFQDN: true
+      initContainers:
+        - name: init
+          image: alpine
+          imagePullPolicy: Always
+          command: ["/bin/sh"]
+          args:
+            - "-xc"
+            - |-
+              apk add gettext
+              envsubst < /config/configmap/ejabberd.yml > /config/combined/ejabberd.yml
+          env:
+            - name: PSQL_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  key: password
+                  name: ejabberd.ejabberd-postgres.credentials.postgresql.acid.zalan.do
+            - name: PROSODY_FILER_SECRET
+              valueFrom:
+                secretKeyRef:
+                  key: SHARED_SECRET
+                  name: prosody-filer
+          envFrom:
+          - secretRef:
+              name: ejabberd
+          volumeMounts:
+            - name: combined
+              mountPath: /config/combined
+            - name: config
+              mountPath: /config/configmap
+            # - name: secret
+            #   mountPath: /config/secret
+      containers:
+      - name: election
+        image: vaporio/k8s-elector
+        args:
+          - -election
+          - ejabberd
+          - -namespace
+          - jabber
+          - -http
+          - localhost:4040
+      - name: ejabberd
+        image: ghcr.io/lykos153/ejabberd-cluster-k8s@sha256:2a42f7f61554821acc87a5706cc7497eb8707da346dce0c515091a7a21d88049
+        imagePullPolicy: Always
+        env:
+        - name: EJABBERD_CLUSTER_KUBERNETES_DISCOVERY
+          value: "true"
+        - name: EJABBERD_KUBERNETES_POD_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.name
+        - name: EJABBERD_KUBERNETES_POD_IP
+          valueFrom:
+            fieldRef:
+              fieldPath: status.podIP
+        - name: EJABBERD_KUBERNETES_LABEL_SELECTOR
+          value: "app=ejabberd"
+        envFrom:
+          - secretRef:
+              name: ejabberd
+        readinessProbe:
+          exec:
+            command:
+            - /bin/sh
+            - -c
+            - /ready-probe.sh
+          initialDelaySeconds: 15
+          periodSeconds: 15
+        resources: {}
+        ports:
+        - containerPort: 5222
+          name: xmpp-c2s
+        - containerPort: 5269
+          name: xmpp-s2s
+        - containerPort: 5280
+          name: http
+        - containerPort: 5443
+          name: https
+        - containerPort: 4369
+          name: epmd
+        - containerPort: 4370
+          name: cluster
+        volumeMounts:
+          - name: combined
+            mountPath: /home/ejabberd/conf/ejabberd.yml
+            subPath: ejabberd.yml
+            # readOnly: true
+          - name: tls
+            mountPath: /home/ejabberd/tls
+          - name: entrypoint
+            mountPath: /entrypoint.sh
+            subPath: entrypoint.sh
+      volumes:
+        - name: config
+          configMap:
+            name: ejabberd
+        # - name: secret
+        #   secret:
+        #     secretName: ejabberd
+        - name: combined
+          emptyDir: {}
+        - name: tls
+          secret:
+            secretName: ejabberd-tls-prod
+        - name: entrypoint
+          configMap:
+            name: ejabberd-entrypoint
+            defaultMode: 0777

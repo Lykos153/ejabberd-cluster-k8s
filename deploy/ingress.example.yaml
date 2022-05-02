@@ -1,0 +1,18 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: ejabberd
+  labels:
+    name: ejabberd
+spec:
+  rules:
+  - host: jabber.example.org
+    http:
+      paths:
+      - pathType: Prefix
+        path: "/"
+        backend:
+          service:
+            name: ejabberd-http
+            port:
+              name: http

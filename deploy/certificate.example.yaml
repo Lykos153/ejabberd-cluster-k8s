@@ -1,0 +1,17 @@
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: ejabberd-tls-prod
+spec:
+  dnsNames:
+  - example.org
+  - xmpp.example.org
+  - muc.example.org
+  issuerRef:
+    group: cert-manager.io
+    kind: ClusterIssuer
+    name: letsencrypt-production
+  secretName: ejabberd-tls-prod
+  usages:
+  - digital signature
+  - key encipherment

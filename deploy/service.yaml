@@ -1,0 +1,42 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: ejabberd
+  annotations: {}
+    # external-dns.alpha.kubernetes.io/hostname: xmpp.example.org,muc.example.org
+spec:
+  selector:
+    app: ejabberd
+  type: LoadBalancer
+  ports:
+  - port: 5222
+    targetPort: xmpp-c2s
+    name: xmpp-c2s
+  - port: 5269
+    targetPort: xmpp-s2s
+    name: xmpp-s2s
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: ejabberd-http
+spec:
+  selector:
+    app: ejabberd
+  ports:
+  - port: 443
+    targetPort: https
+    name: https
+  - port: 80
+    targetPort: http
+    name: http
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: ejabberd-headless
+spec:
+  clusterIP: None
+  publishNotReadyAddresses: false # important, so we can check for healthy pods using nslookup
+  selector:
+    app: ejabberd
