@@ -53,7 +53,7 @@ spec:
             #   mountPath: /config/secret
       containers:
       - name: election
-        image: vaporio/k8s-elector
+        image: vaporio/k8s-elector:1.2.0
         args:
           - -election
           - ejabberd
@@ -62,7 +62,7 @@ spec:
           - -http
           - localhost:4040
       - name: ejabberd
-        image: ghcr.io/lykos153/ejabberd-cluster-k8s@sha256:2a42f7f61554821acc87a5706cc7497eb8707da346dce0c515091a7a21d88049
+        image: ghcr.io/lykos153/ejabberd-cluster-k8s:21.12-1
         imagePullPolicy: Always
         env:
         - name: EJABBERD_CLUSTER_KUBERNETES_DISCOVERY
