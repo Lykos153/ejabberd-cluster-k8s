@@ -109,9 +109,6 @@ spec:
             # readOnly: true
           - name: tls
             mountPath: /home/ejabberd/tls
-          - name: entrypoint
-            mountPath: /entrypoint.sh
-            subPath: entrypoint.sh
       volumes:
         - name: config
           configMap:
@@ -124,7 +121,3 @@ spec:
         - name: tls
           secret:
             secretName: ejabberd-tls-prod
-        - name: entrypoint
-          configMap:
-            name: ejabberd-entrypoint
-            defaultMode: 0777
