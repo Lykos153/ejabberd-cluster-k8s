@@ -1,6 +1,5 @@
-# Migration from prosody: https://thomas-leister.de/en/migrating-trashserver-prosody-ejabberd/
 # Cluster setup: https://github.com/processone/docker-ejabberd/issues/64
-
+---
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
