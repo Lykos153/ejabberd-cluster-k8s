@@ -62,7 +62,7 @@ spec:
           - -http
           - localhost:4040
       - name: ejabberd
-        image: ghcr.io/lykos153/ejabberd-cluster-k8s:21.12-1
+        image: ghcr.io/lykos153/ejabberd-cluster-k8s:21.12-3
         imagePullPolicy: Always
         env:
         - name: EJABBERD_CLUSTER_KUBERNETES_DISCOVERY
