@@ -22,7 +22,9 @@ envsubst < "${EJABBERD_CONFIG}" > $HOME/conf/ejabberd.yml
 : ${ERLANG_NODE:="${ERLANG_NODE_PREFIX}@${HOSTNAME}.${ERLANG_DOMAIN}"}
 echo "ERLANG_NODE=$ERLANG_NODE" >> $HOME/conf/ejabberdctl.cfg
 
+: ${ELECTION_NAME:="ejabberd"}
 : ${ELECTION_URL:="localhost:4040"}
+: ${ELECTION_NAMESPACE:="$(cat /run/secrets/kubernetes.io/serviceaccount/namespace)"}
 
 leader_erlang_node() {
     leader="$(curl "$ELECTION_URL" | jq -r .leader)"
@@ -55,6 +57,7 @@ join_cluster() {
 EJABBERD_PID=0
 
 terminate() {
+    kill -s TERM "$ELECTOR_PID"
     if [ "$EJABBERD_PID" -ne 0 ]; then
         # Leave the cluster before terminating
         echo "[entrypoint_script] Leaving cluster '$ERLANG_NODE'"
@@ -72,6 +75,9 @@ trap "terminate" SIGTERM
 ## Start ejabberd
 $HOME/bin/ejabberdctl foreground &
 EJABBERD_PID=$!
+elector -election "${ELECTION_NAME}" -namespace "${ELECTION_NAMESPACE}" \
+    -http "${ELECTION_URL}"&
+ELECTOR_PID=$!
 $HOME/bin/ejabberdctl started
 join_cluster && touch "$EJABBERD_READY_FILE" || terminate
-wait "$EJABBERD_PID"
+wait "$EJABBERD_PID" "$ELECTOR_PID"

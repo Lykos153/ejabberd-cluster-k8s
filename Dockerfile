@@ -9,7 +9,7 @@ USER root
 RUN apk add --no-cache curl jq gettext
 
 COPY entrypoint.sh ready-probe.sh /
-
+COPY --from=vaporio/k8s-elector:1.2.0 elector /usr/local/bin/elector
 
 # Setup runtime environment
 USER ejabberd

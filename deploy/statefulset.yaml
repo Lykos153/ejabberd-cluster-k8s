@@ -21,31 +21,9 @@ spec:
       # subdomain: ejabberd-headless
       # setHostnameAsFQDN: true
       containers:
-      - name: election
-        image: vaporio/k8s-elector:1.2.0
-        args:
-          - -election
-          - ejabberd
-          - -namespace
-          - jabber
-          - -http
-          - localhost:4040
       - name: ejabberd
         image: ghcr.io/lykos153/ejabberd-cluster-k8s:v21.12-4
         imagePullPolicy: Always
-        env:
-        - name: EJABBERD_CLUSTER_KUBERNETES_DISCOVERY
-          value: "true"
-        - name: EJABBERD_KUBERNETES_POD_NAME
-          valueFrom:
-            fieldRef:
-              fieldPath: metadata.name
-        - name: EJABBERD_KUBERNETES_POD_IP
-          valueFrom:
-            fieldRef:
-              fieldPath: status.podIP
-        - name: EJABBERD_KUBERNETES_LABEL_SELECTOR
-          value: "app=ejabberd"
         envFrom:
           - secretRef:
               name: ejabberd
