@@ -20,37 +20,6 @@ spec:
       serviceAccountName: ejabberd
       # subdomain: ejabberd-headless
       # setHostnameAsFQDN: true
-      initContainers:
-        - name: init
-          image: alpine
-          imagePullPolicy: Always
-          command: ["/bin/sh"]
-          args:
-            - "-xc"
-            - |-
-              apk add gettext
-              envsubst < /config/configmap/ejabberd.yml > /config/combined/ejabberd.yml
-          env:
-            - name: PSQL_PASSWORD
-              valueFrom:
-                secretKeyRef:
-                  key: password
-                  name: ejabberd.ejabberd-postgres.credentials.postgresql.acid.zalan.do
-            - name: PROSODY_FILER_SECRET
-              valueFrom:
-                secretKeyRef:
-                  key: SHARED_SECRET
-                  name: prosody-filer
-          envFrom:
-          - secretRef:
-              name: ejabberd
-          volumeMounts:
-            - name: combined
-              mountPath: /config/combined
-            - name: config
-              mountPath: /config/configmap
-            # - name: secret
-            #   mountPath: /config/secret
       containers:
       - name: election
         image: vaporio/k8s-elector:1.2.0
@@ -103,21 +72,14 @@ spec:
         - containerPort: 4370
           name: cluster
         volumeMounts:
-          - name: combined
-            mountPath: /home/ejabberd/conf/ejabberd.yml
-            subPath: ejabberd.yml
-            # readOnly: true
+          - name: config
+            mountPath: /config
           - name: tls
             mountPath: /home/ejabberd/tls
       volumes:
         - name: config
           configMap:
             name: ejabberd
-        # - name: secret
-        #   secret:
-        #     secretName: ejabberd
-        - name: combined
-          emptyDir: {}
         - name: tls
           secret:
             secretName: ejabberd-tls-prod

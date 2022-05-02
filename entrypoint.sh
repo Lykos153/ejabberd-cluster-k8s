@@ -13,11 +13,14 @@ if [ -n "$ERLANG_COOKIE" ]; then
     chmod 400 "$HOME/.erlang.cookie"
 fi
 
+: ${EJABBERD_CONFIG:="/config/ejabberd.yml"}
+envsubst < "${EJABBERD_CONFIG}" > $HOME/conf/ejabberd.yml
+
 : ${ERLANG_NODE_PREFIX:="ejabberd"}
 : ${ERLANG_DOMAIN:="$(hostname -d)"}
 : ${HOSTNAME:="$(hostname)"}
 : ${ERLANG_NODE:="${ERLANG_NODE_PREFIX}@${HOSTNAME}.${ERLANG_DOMAIN}"}
-echo "ERLANG_NODE=$ERLANG_NODE" >> conf/ejabberdctl.cfg
+echo "ERLANG_NODE=$ERLANG_NODE" >> $HOME/conf/ejabberdctl.cfg
 
 : ${ELECTION_URL:="localhost:4040"}
 

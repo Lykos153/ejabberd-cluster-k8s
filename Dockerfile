@@ -6,7 +6,7 @@ ENV EJABBERD_HOSTS=localhost \
 
 USER root
 
-RUN apk add --no-cache curl jq
+RUN apk add --no-cache curl jq gettext
 
 COPY entrypoint.sh ready-probe.sh /
 
