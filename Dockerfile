@@ -1,5 +1,5 @@
 # ARG EJABBERD_VERSION
-FROM ejabberd/ecs:21.12
+FROM ejabberd/ecs:22.05
 
 ENV EJABBERD_HOSTS=localhost \
     EJABBERD_ERLANG_NODE="ejabberd@$(hostname -f)"
