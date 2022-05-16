@@ -21,7 +21,7 @@ spec:
       # setHostnameAsFQDN: true
       containers:
       - name: ejabberd
-        image: ghcr.io/lykos153/ejabberd-cluster-k8s:v21.12-5
+        image: ghcr.io/lykos153/ejabberd-cluster-k8s:v22.05-1
         imagePullPolicy: Always
         envFrom:
           - secretRef:
