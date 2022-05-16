@@ -52,7 +52,7 @@ spec:
           - name: config
             mountPath: /config
           - name: tls
-            mountPath: /home/ejabberd/tls
+            mountPath: /opt/ejabberd/tls
       volumes:
         - name: config
           configMap:
