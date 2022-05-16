@@ -20,7 +20,7 @@ envsubst < "${EJABBERD_CONFIG}" > $HOME/conf/ejabberd.yml
 : ${ERLANG_DOMAIN:="$(hostname -d)"}
 : ${HOSTNAME:="$(hostname)"}
 : ${ERLANG_NODE:="${ERLANG_NODE_PREFIX}@${HOSTNAME}.${ERLANG_DOMAIN}"}
-export ERLANG_NODE_ARG="$ERLANG_NODE"
+echo "ERLANG_NODE_ARG=$ERLANG_NODE" >> $HOME/conf/ejabberdctl.cfg
 
 : ${ELECTION_NAME:="ejabberd"}
 : ${ELECTION_URL:="localhost:4040"}
