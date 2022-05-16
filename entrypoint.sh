@@ -47,7 +47,7 @@ join_cluster() {
         else
             leader_erlang_node="$(leader_erlang_node)"
             echo "[entrypoint_script] Trying to join ${leader_erlang_node}..."
-            $HOME/bin/ejabberdctl join_cluster "${leader_erlang_node}" && return 0
+            ejabberdctl join_cluster "${leader_erlang_node}" && return 0
             sleep 5
         fi
     done
@@ -61,9 +61,9 @@ terminate() {
     if [ "$EJABBERD_PID" -ne 0 ]; then
         # Leave the cluster before terminating
         echo "[entrypoint_script] Leaving cluster '$ERLANG_NODE'"
-        NO_WARNINGS=true $HOME/bin/ejabberdctl leave_cluster "$ERLANG_NODE"
-        $HOME/bin/ejabberdctl stop > /dev/null
-        $HOME/bin/ejabberdctl stopped > /dev/null
+        NO_WARNINGS=true ejabberdctl leave_cluster "$ERLANG_NODE"
+        ejabberdctl stop > /dev/null
+        ejabberdctl stopped > /dev/null
 
         kill -s TERM "$EJABBERD_PID"
         exit $1
@@ -73,11 +73,11 @@ terminate() {
 trap "terminate" SIGTERM
 
 ## Start ejabberd
-$HOME/bin/ejabberdctl foreground &
+ejabberdctl foreground &
 EJABBERD_PID=$!
 elector -election "${ELECTION_NAME}" -namespace "${ELECTION_NAMESPACE}" \
     -http "${ELECTION_URL}"&
 ELECTOR_PID=$!
-$HOME/bin/ejabberdctl started
+ejabberdctl started
 join_cluster && touch "$EJABBERD_READY_FILE" || terminate $?
 wait "$EJABBERD_PID" "$ELECTOR_PID"
