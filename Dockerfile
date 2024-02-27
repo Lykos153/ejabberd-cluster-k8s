@@ -1,5 +1,5 @@
 # ARG EJABBERD_VERSION
-FROM ghcr.io/processone/ejabberd:22.10
+FROM ghcr.io/processone/ejabberd:24.02
 
 ENV EJABBERD_HOSTS=localhost \
     EJABBERD_ERLANG_NODE="ejabberd@$(hostname -f)"
